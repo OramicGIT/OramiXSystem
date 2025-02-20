@@ -1,0 +1,10 @@
+D:\
+runas Boot Manager
+head COS
+value Oramic + COS
+combine COS "value"
+TimeTemplate: TT:TT DD.DD.DDDD
+:D XD BRUH LOL 
+
+
+

@@ -15,3 +15,6 @@ and then zip all copied files, to 1 zip archive, and load this zip to Google Dri
 
 ## You can modify the code and share with friends. How to make this? Just edit the code of any file what are you want. And use the **How to share** Tutorial.
 Goodbye! 
+
+## BUT WHERE IS SYSTEM?
+I just lazy about system full loading to GitHub, and system in Releases, and BINARY.zip

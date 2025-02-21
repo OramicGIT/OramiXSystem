@@ -1,2 +1,0 @@
-com.oramic.console
-com.windows.cmd

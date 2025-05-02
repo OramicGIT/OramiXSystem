@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>OramicCOS — BAT-окружение в стиле ОС</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #f0f0f0;
+    }
+    a { color: #00e0ff; text-decoration: none; }
+    header {
+      text-align: center;
+      padding: 2.5em 1em;
+      background: #1f1f1f;
+    }
+    header h1 {
+      font-size: 2.8em;
+      margin-bottom: 0.3em;
+    }
+    header p {
+      font-size: 1.2em;
+      color: #ccc;
+      max-width: 720px;
+      margin: auto;
+    }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2em 1em;
+    }
+    section {
+      margin-bottom: 3em;
+    }
+    .features {
+      display: grid;
+      gap: 1.5em;
+    }
+    .feature {
+      background: #1e1e1e;
+      padding: 1.5em;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #00000050;
+    }
+    .feature h2 {
+      color: #00e0ff;
+    }
+    .screenshots {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1em;
+    }
+    .screenshots img {
+      width: 300px;
+      border-radius: 8px;
+      border: 2px solid #333;
+    }
+    .download-section {
+      text-align: center;
+    }
+    .edition {
+      background: #292929;
+      padding: 1em;
+      margin: 1em auto;
+      max-width: 420px;
+      border-radius: 6px;
+      border: 1px solid #444;
+    }
+    .edition h3 {
+      color: #7df;
+      margin-bottom: 0.3em;
+    }
+    .edition p {
+      font-size: 0.95em;
+      color: #ccc;
+    }
+    .download-btn {
+      display: inline-block;
+      margin-top: 0.7em;
+      background: #00e0ff;
+      color: #000;
+      padding: 0.6em 1.4em;
+      font-weight: bold;
+      border-radius: 4px;
+    }
+    footer {
+      text-align: center;
+      padding: 2em;
+      background: #1f1f1f;
+      font-size: 0.9em;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>OramicCOS</h1>
+  <p>Псевдо-операционная система, созданная на BAT-файлах. Минимализм, кастомизация, симуляция — всё внутри Windows CMD.</p>
+</header>
+
+<main class="container">
+  
+  <section>
+    <h2>🧭 Что такое OramicCOS?</h2>
+    <p>
+      OramicCOS — это экспериментальная "операционная среда", построенная на BAT-файлах и командной строке Windows. 
+      Несмотря на простоту реализации, она имитирует ключевые функции настоящей ОС: 
+      управление пользователями, хранение настроек в ini-файлах, загрузка модов, файловая структура и т.д.
+    </p>
+    <p>
+      Проект отлично подойдёт тем, кто хочет узнать, как работает ОС «изнутри», 
+      или просто поностальгировать по эпохе DOS-подобных интерфейсов.
+    </p>
+  </section>
+
+  <section class="features">
+    <div class="feature">
+      <h2>👤 Пользователи</h2>
+      <p>Система поддерживает вход по логину/паролю с хешированием и профилями, как в настоящих ОС.</p>
+    </div>
+    <div class="feature">
+      <h2>⚙ Реестр и ini-конфиги</h2>
+      <p>Вместо базы данных — простой и понятный ini-формат для настроек и параметров. Легко редактируется вручную.</p>
+    </div>
+    <div class="feature">
+      <h2>🔌 Моды и расширения</h2>
+      <p>Любой пользователь может написать модуль, который добавит команды, игры или интерфейсы. Поддерживаются во всех редакциях, кроме Lite.</p>
+    </div>
+    <div class="feature">
+      <h2>💻 Работает в любом CMD</h2>
+      <p>Не требует установки — просто запусти BAT-файл. Совместимо с Windows Vista и выше, работает даже на слабых машинах.</p>
+    </div>
+     <div class="feature">
+      <h2>💻 Модульность системы</h2>
+      <p>Можно вырезать почти любой компонент - просто немного перепиши код и готово!</p>
+    </div>
+    <div class="feature">
+      <h2>💻 Легкость редактирования</h2>
+      <p>Изменить код сможет даже ребенок если он знает BAT!</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>🖼 Скриншоты</h2>
+    <div class="screenshots">
+      <img src="a1.png" alt="Скриншот OramicCOS #1">
+      <img src="b1.png" alt="Скриншот OramicCOS #2">
+      <img src="c1.png" alt="Скриншот OramicCOS #3">
+    </div>
+  </section>
+
+  <section class="download-section" id="download">
+    <h2>📦 Скачать OramicCOS</h2>
+    
+    <div class="edition">
+      <h3>💾 Lite Edition</h3>
+      <p>Мини-версия. Влезает на дискету! Без поддержки модов, только ядро и базовые команды. Загрузка будет скоро.</p>
+      <a class="download-btn" href="">Скачать</a>
+    </div>
+
+    <div class="edition">
+      <h3>🏠 Home Edition</h3>
+      <p>Рекомендуемая версия для новичков. Поддержка модов, файловой системы и кастомизации.</p>
+      <a class="download-btn" href="BINARY.zip">Скачать</a>
+    </div>
+
+    <div class="edition">
+      <h3>🧠 Server Edition</h3>
+      <p>Для энтузиастов и экспериментов. </p>
+      <a class="download-btn" href="BIN2.zip">Скачать</a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>© 2025 OramicCOS Project | <a href="">GitHub</a> | Hosted via GitHub Pages</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OramicCOS Web Edition</title>
+    <!-- Tailwind CSS CDN for quick styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.875rem; /* text-sm */
+            overflow: hidden; /* Prevent body scroll */
+        }
+        /* Custom styles for the classic OS look */
+        .window {
+            background-color: #C0C0C0;
+            border: 2px outset #FFFFFF; /* Light border for 3D effect */
+            box-shadow: 2px 2px 0px 0px #808080, 4px 4px 0px 0px #000000; /* Darker shadow for depth */
+            position: absolute;
+            min-width: 200px;
+            min-height: 100px;
+            /* resize: both; /* Allow manual resizing - disabled for custom resize handles */ */
+            overflow: hidden; /* Hide content overflow during resize */
+            display: flex;
+            flex-direction: column;
+            border-radius: 4px; /* Slightly rounded corners */
+            user-select: none; /* Prevent text selection during drag/resize */
+        }
+        .window-title-bar {
+            background: linear-gradient(to right, #000080, #1084D0); /* Classic blue gradient */
+            color: white;
+            padding: 2px 4px;
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 0.75rem; /* text-xs */
+            user-select: none; /* Prevent text selection during drag */
+            border-bottom: 1px solid #000060;
+        }
+        .window-content {
+            flex-grow: 1;
+            background-color: white;
+            padding: 4px;
+            overflow: auto;
+            color: black;
+            font-size: 0.75rem;
+            display: flex;
+            flex-direction: column;
+        }
+        .window-controls button {
+            background-color: #C0C0C0;
+            border: 2px outset #FFFFFF;
+            font-size: 0.75rem;
+            width: 18px;
+            height: 18px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            margin-left: 2px;
+            box-shadow: 1px 1px 0px 0px #808080, 2px 2px 0px 0px #000000;
+        }
+        .window-controls button:active {
+            border: 2px inset #FFFFFF;
+            box-shadow: inset 1px 1px 0px 0px #808080, inset 2px 2px 0px 0px #000000;
+            background-color: #B0B0B0;
+        }
+        .taskbar-button, .start-button {
+            border: 2px outset #FFFFFF;
+            box-shadow: 2px 2px 0px 0px #808080, 4px 4px 0px 0px #000000;
+        }
+        .taskbar-button:active, .start-button:active {
+            border: 2px inset #FFFFFF;
+            box-shadow: inset 2px 2px 0px 0px #808080, inset 4px 4px 0px 0px #000000;
+        }
+        .desktop-icon {
+            text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+            transition: transform 0.1s ease-in-out;
+            cursor: pointer;
+        }
+        .desktop-icon:hover {
+            transform: translateY(-2px);
+        }
+        .desktop-icon:active {
+            transform: translateY(0);
+        }
+
+        /* Console specific styles */
+        .console-output {
+            background-color: black;
+            color: #00FF00; /* Green text for console */
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            border: 1px solid #333;
+        }
+        .console-input-line {
+            display: flex;
+            align-items: center;
+            padding: 4px 8px;
+            background-color: #222;
+        }
+        .console-input {
+            background-color: transparent;
+            border: none;
+            outline: none;
+            color: #00FF00;
+            flex-grow: 1;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .console-input:focus {
+            outline: none;
+        }
+        .text-editor {
+            flex-grow: 1;
+            width: 100%;
+            height: 100%;
+            border: none;
+            padding: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.8rem;
+            resize: none; /* No internal textarea resize */
+            outline: none;
+        }
+
+        /* File Explorer styles */
+        .file-explorer {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .address-bar {
+            background-color: #C0C0C0;
+            border-bottom: 1px solid #808080;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            font-size: 0.7rem;
+            white-space: nowrap;
+        }
+        .address-bar input {
+            background-color: white;
+            border: 1px inset #808080;
+            flex-grow: 1;
+            padding: 2px 4px;
+            margin-left: 4px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .file-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            background-color: white;
+            padding: 4px;
+            font-size: 0.75rem;
+            color: black;
+        }
+        .file-list-item {
+            display: flex;
+            align-items: center;
+            padding: 2px 4px;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        .file-list-item:hover {
+            background-color: #000080;
+            color: white;
+        }
+        .file-list-item.selected {
+            background-color: #000080;
+            color: white;
+        }
+        .file-list-item .icon {
+            margin-right: 4px;
+            font-size: 1.1em;
+        }
+
+        /* Context Menu styles */
+        .context-menu {
+            background-color: #C0C0C0;
+            border: 2px outset #FFFFFF;
+            box-shadow: 2px 2px 0px 0px #808080, 4px 4px 0px 0px #000000;
+            position: absolute;
+            z-index: 100; /* Always on top */
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            padding: 2px;
+            border-radius: 4px;
+        }
+        .context-menu-item {
+            padding: 4px 12px;
+            cursor: pointer;
+            white-space: nowrap;
+            font-size: 0.75rem;
+            color: black;
+        }
+        .context-menu-item:hover {
+            background-color: #000080;
+            color: white;
+        }
+        .context-menu-separator {
+            border-top: 1px solid #808080;
+            border-bottom: 1px solid #FFFFFF;
+            margin: 2px 0;
+        }
+
+        /* Installer styles */
+        .installer-content {
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        .installer-content button {
+            background-color: #C0C0C0;
+            border: 2px outset #FFFFFF;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            box-shadow: 1px 1px 0px 0px #808080, 2px 2px 0px 0px #000000;
+            color: black;
+        }
+        .installer-content button:active {
+            border: 2px inset #FFFFFF;
+            box-shadow: inset 1px 1px 0px 0px #808080, inset 2px 2px 0px 0px #000000;
+            background-color: #B0B0B0;
+        }
+        .installer-content select {
+            background-color: white;
+            border: 1px inset #808080;
+            padding: 4px;
+            font-size: 0.8rem;
+            font-family: 'Press Start 2P', cursive;
+            color: black;
+        }
+
+        /* Custom scrollbar for classic look */
+        ::-webkit-scrollbar {
+            width: 16px;
+            height: 16px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #C0C0C0;
+            border: 1px solid #808080;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #C0C0C0;
+            border: 2px outset #FFFFFF;
+            box-shadow: 1px 1px 0px 0px #808080;
+        }
+        ::-webkit-scrollbar-thumb:active {
+            border: 2px inset #FFFFFF;
+            box-shadow: inset 1px 1px 0px 0px #808080;
+        }
+        ::-webkit-scrollbar-corner {
+            background: #C0C0C0;
+        }
+    </style>
+</head>
+<body class="bg-[#008080]">
+    <!-- Main OS Container -->
+    <div id="os-container" class="relative w-full h-screen overflow-hidden">
+        <!-- Desktop Area -->
+        <div id="desktop" class="absolute inset-0 z-0">
+            <!-- Desktop Icons -->
+            <div class="absolute top-4 left-4 flex flex-col space-y-4">
+                <div class="desktop-icon flex flex-col items-center p-2 text-white" onclick="createWindow('text', 'Мой ПК', 'CPU: Generic 32-bit Compatible CPU\\nRAM: 512 MB\\nGPU: Default OramiX Driver 16:9', 400, 200)">
+                    <span class="text-4xl leading-none">💻</span>
+                    <span class="mt-1 text-xs text-center">Мой ПК</span>
+                </div>
+                <div class="desktop-icon flex flex-col items-center p-2 text-white" onclick="createWindow('file-explorer', 'Проводник', '', 700, 500)">
+                    <span class="text-4xl leading-none">📁</span>
+                    <span class="mt-1 text-xs text-center">Проводник</span>
+                </div>
+                <div class="desktop-icon flex flex-col items-center p-2 text-white" onclick="createWindow('console', 'OramicCOS Консоль', '', 600, 400)">
+                    <span class="text-4xl leading-none">🖥️</span>
+                    <span class="mt-1 text-xs text-center">Консоль</span>
+                </div>
+                <div class="desktop-icon flex flex-col items-center p-2 text-white" onclick="createWindow('text-editor', 'Блокнот', '', 500, 400)">
+                    <span class="text-4xl leading-none">✍️</span>
+                    <span class="mt-1 text-xs text-center">Блокнот</span>
+                </div>
+                <div class="desktop-icon flex flex-col items-center p-2 text-white" onclick="createWindow('text', 'Web Oramic', 'Это просто заглушка браузера.', 600, 450)">
+                    <span class="text-4xl leading-none">🌐</span>
+                    <span class="mt-1 text-xs text-center">Браузер</span>
+                </div>
+                <div class="desktop-icon flex flex-col items-center p-2 text-white" onclick="createWindow('installer', 'Установщик OramicCOS', '', 500, 350)">
+                    <span class="text-4xl leading-none">💿</span>
+                    <span class="mt-1 text-xs text-center">Установщик</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Desktop Context Menu (hidden by default) -->
+        <div id="desktopContextMenu" class="context-menu hidden">
+            <div class="context-menu-item" onclick="handleContextMenuAction('properties')">Свойства</div>
+            <div class="context-menu-item" onclick="handleContextMenuAction('change-background')">Изменить фон</div>
+            <div class="context-menu-separator"></div>
+            <div class="context-menu-item" onclick="handleContextMenuAction('new-file')">Создать файл</div>
+            <div class="context-menu-item" onclick="handleContextMenuAction('new-folder')">Создать папку</div>
+        </div>
+
+        <!-- Message Box (replaces alert/confirm) -->
+        <div id="messageBox" class="window hidden" style="width: 300px; height: auto; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1001;">
+            <div class="window-title-bar">
+                <span>Сообщение OramicCOS</span>
+                <div class="window-controls flex">
+                    <button data-action="close-messagebox">✕</button>
+                </div>
+            </div>
+            <div class="window-content text-center p-4" style="min-height: 50px;">
+                <p id="messageBoxText" class="text-black"></p>
+                <button id="messageBoxOk" class="mt-4 px-4 py-1 bg-gray-300 border-2 outset border-white shadow-md hover:bg-gray-400 text-black">OK</button>
+            </div>
+        </div>
+
+
+        <!-- Taskbar -->
+        <div id="taskbar" class="fixed bottom-0 left-0 w-full h-8 bg-gray-300 border-t-2 border-gray-400 flex items-center shadow-[inset_0_2px_0_rgba(255,255,255,0.7)] z-50">
+            <!-- Start Button -->
+            <button id="startButton" class="start-button h-full px-4 bg-gray-300 border-r-2 border-b-2 border-gray-400 border-t-2 border-l-2 flex items-center justify-center space-x-1 cursor-pointer hover:bg-gray-400 active:bg-gray-200 text-black text-sm">
+                <img src="https://placehold.co/16x16/000000/FFFFFF?text=OS" alt="OramicCOS Logo" class="w-4 h-4" />
+                <span>Пуск</span>
+            </button>
+
+            <!-- Start Menu (initially hidden) -->
+            <div id="startMenu" class="hidden absolute bottom-8 left-0 w-48 bg-gray-300 border-2 border-gray-400 shadow-[inset_0_2px_0_rgba(255,255,255,0.7),inset_0_0_0_1px_rgba(0,0,0,0.5)] z-50">
+                <div class="flex items-center px-4 py-1 cursor-pointer hover:bg-blue-600 hover:text-white text-black text-xs" onclick="createWindow('console', 'OramicCOS Консоль', '', 600, 400); document.getElementById('startMenu').classList.add('hidden');">
+                    <span class="mr-2 text-base">🖥️</span>
+                    <span>Консоль</span>
+                </div>
+                <div class="flex items-center px-4 py-1 cursor-pointer hover:bg-blue-600 hover:text-white text-black text-xs" onclick="createWindow('file-explorer', 'Проводник', '', 700, 500); document.getElementById('startMenu').classList.add('hidden');">
+                    <span class="mr-2 text-base">📁</span>
+                    <span>Проводник</span>
+                </div>
+                <div class="flex items-center px-4 py-1 cursor-pointer hover:bg-blue-600 hover:text-white text-black text-xs" onclick="createWindow('text-editor', 'Блокнот', '', 500, 400); document.getElementById('startMenu').classList.add('hidden');">
+                    <span class="mr-2 text-base">✍️</span>
+                    <span>Блокнот</span>
+                </div>
+                <div class="flex items-center px-4 py-1 cursor-pointer hover:bg-blue-600 hover:text-white text-black text-xs" onclick="createWindow('text', 'Web Oramic', 'Это просто заглушка браузера.', 600, 450); document.getElementById('startMenu').classList.add('hidden');">
+                    <span class="mr-2 text-base">🌐</span>
+                    <span>Браузер</span>
+                </div>
+                <div class="flex items-center px-4 py-1 cursor-pointer hover:bg-blue-600 hover:text-white text-black text-xs" onclick="createWindow('installer', 'Установщик OramicCOS', '', 500, 350); document.getElementById('startMenu').classList.add('hidden');">
+                    <span class="mr-2 text-base">💿</span>
+                    <span>Установщик</span>
+                </div>
+                <div class="border-t-2 border-gray-400 border-b-2 border-gray-200 my-1"></div>
+                <div class="flex items-center px-4 py-1 cursor-pointer hover:bg-blue-600 hover:text-white text-black text-xs" onclick="showMessageBox('Выключение... На самом деле нет :)'); document.getElementById('startMenu').classList.add('hidden');">
+                    <span class="mr-2 text-base">🚪</span>
+                    <span>Выключение</span>
+                </div>
+            </div>
+
+            <!-- Running applications on Taskbar (minimized windows will appear here) -->
+            <div id="taskbarApps" class="flex-1 flex items-center h-full px-2 overflow-x-auto">
+                <!-- Minimized window buttons will be appended here by JS -->
+            </div>
+
+            <!-- Clock -->
+            <div id="clock" class="h-full px-4 bg-gray-300 border-l-2 border-b-2 border-gray-400 border-t-2 border-r-2 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.5)] flex items-center text-black text-xs">
+                <!-- Clock time will be updated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let highestZIndex = 10; // To manage window layering
+        let windowCounter = 0; // To give unique IDs to windows
+        const openWindows = {}; // Store references to open window elements by ID
+        let currentUser = 'system'; // Current logged-in user, defaulted to 'system'
+        let loggedIn = true; // Authentication state, defaulted to true for auto-login
+
+        const backgroundColors = ['#008080', '#004080', '#800080', '#808000', '#008040']; // Different shades
+        let currentBackgroundIndex = 0; // Index for current background
+
+        // Function to update the clock
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('clock').textContent = timeString;
+        }
+
+        // Initialize clock on load and update every minute
+        updateClock();
+        setInterval(updateClock, 60000); // Update every minute
+
+        // Handle desktop click to close start menu and context menu
+        document.getElementById('desktop').addEventListener('mousedown', (e) => {
+            const startMenu = document.getElementById('startMenu');
+            const startButton = document.getElementById('startButton');
+            if (!startMenu.contains(e.target) && !startButton.contains(e.target)) {
+                startMenu.classList.add('hidden');
+            }
+
+            const contextMenu = document.getElementById('desktopContextMenu');
+            if (!contextMenu.contains(e.target)) {
+                contextMenu.classList.add('hidden');
+            }
+        });
+
+        // Toggle start menu
+        document.getElementById('startButton').addEventListener('click', () => {
+            document.getElementById('startMenu').classList.toggle('hidden');
+        });
+
+        /**
+         * Shows a custom message box instead of alert/confirm.
+         * @param {string} message - The message to display.
+         * @param {function} [onOk=null] - Optional callback function when OK is clicked.
+         */
+        function showMessageBox(message, onOk = null) {
+            const msgBox = document.getElementById('messageBox');
+            const msgText = document.getElementById('messageBoxText');
+            const msgOkBtn = document.getElementById('messageBoxOk');
+
+            msgText.textContent = message;
+            msgBox.classList.remove('hidden');
+            msgBox.style.zIndex = ++highestZIndex; // Bring to front
+
+            const closeHandler = () => {
+                msgBox.classList.add('hidden');
+                msgOkBtn.removeEventListener('click', closeHandler);
+                msgBox.querySelector('[data-action="close-messagebox"]').removeEventListener('click', closeHandler);
+                if (onOk) onOk();
+            };
+
+            msgOkBtn.addEventListener('click', closeHandler);
+            msgBox.querySelector('[data-action="close-messagebox"]').addEventListener('click', closeHandler);
+        }
+
+        /**
+         * Creates and displays a new window.
+         * @param {string} type - Type of window ('text', 'console', 'text-editor', 'file-explorer', 'installer').
+         * @param {string} title - Title of the window.
+         * @param {string} [content=''] - Initial content for 'text' windows.
+         * @param {number} [initialWidth=400] - Initial width of the window.
+         * @param {number} [initialHeight=300] - Initial height of the window.
+         */
+        function createWindow(type, title, content = '', initialWidth = 400, initialHeight = 300) {
+            // No login check needed, as it runs as system
+            windowCounter++;
+            const windowId = `window-${windowCounter}`;
+            highestZIndex++;
+
+            const newWindow = document.createElement('div');
+            newWindow.id = windowId;
+            newWindow.className = 'window absolute rounded-md flex flex-col overflow-hidden';
+            newWindow.style.zIndex = highestZIndex;
+            newWindow.style.left = `${Math.random() * 100 + 50}px`; // Random X
+            newWindow.style.top = `${Math.random() * 100 + 50}px`;   // Random Y
+            newWindow.style.width = `${initialWidth}px`;
+            newWindow.style.height = `${initialHeight}px`;
+            newWindow.dataset.minimized = 'false';
+            newWindow.dataset.maximized = 'false';
+
+            // Title Bar
+            const titleBar = document.createElement('div');
+            titleBar.className = 'window-title-bar';
+            titleBar.innerHTML = `
+                <span class="flex items-center">
+                    <img src="https://placehold.co/12x12/FFFFFF/000000?text=" alt="Icon" class="mr-1">
+                    <span>${title}</span>
+                </span>
+                <div class="window-controls flex">
+                    <button data-action="minimize">_</button>
+                    <button data-action="maximize">⬜</button>
+                    <button data-action="close">✕</button>
+                </div>
+            `;
+            newWindow.appendChild(titleBar);
+
+            // Window Content
+            const windowContent = document.createElement('div');
+            windowContent.className = 'window-content';
+            newWindow.appendChild(windowContent);
+
+            // Append to OS container
+            document.getElementById('os-container').appendChild(newWindow);
+            openWindows[windowId] = newWindow; // Store reference
+
+            // Populate content based on type
+            if (type === 'console') {
+                createConsole(windowContent, windowId);
+            } else if (type === 'text-editor') {
+                createTextEditor(windowContent, content);
+            } else if (type === 'file-explorer') {
+                createFileExplorer(windowContent, windowId);
+            } else if (type === 'installer') {
+                createInstaller(windowContent, windowId);
+            } else {
+                windowContent.innerHTML = `<div class="p-2 overflow-auto text-xs whitespace-pre-wrap">${content}</div>`;
+            }
+
+            // --- Window Interactions ---
+
+            // Dragging
+            let isDragging = false;
+            let offsetX, offsetY;
+
+            titleBar.addEventListener('mousedown', (e) => {
+                if (e.target.closest('.window-controls') || newWindow.dataset.maximized === 'true') return;
+                isDragging = true;
+                newWindow.style.zIndex = ++highestZIndex; // Bring to front
+                offsetX = e.clientX - newWindow.getBoundingClientRect().left;
+                offsetY = e.clientY - newWindow.getBoundingClientRect().top;
+                newWindow.style.cursor = 'grabbing';
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                let newX = e.clientX - offsetX;
+                let newY = e.clientY - offsetY;
+
+                // Clamp to screen bounds
+                const taskbarHeight = document.getElementById('taskbar').offsetHeight;
+                newX = Math.max(0, Math.min(newX, window.innerWidth - newWindow.offsetWidth));
+                newY = Math.max(0, Math.min(newY, window.innerHeight - taskbarHeight - newWindow.offsetHeight));
+
+                newWindow.style.left = `${newX}px`;
+                newWindow.style.top = `${newY}px`;
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+                newWindow.style.cursor = 'grab';
+            });
+
+            // Resizing (Manual handles for custom resizing)
+            let isResizing = false;
+            let resizeStartX, resizeStartY, resizeStartWidth, resizeStartHeight;
+
+            const resizeHandles = [
+                { class: 'resize-handle-br', cursor: 'nwse-resize', dx: 1, dy: 1 },
+                { class: 'resize-handle-bl', cursor: 'nesw-resize', dx: -1, dy: 1 },
+                { class: 'resize-handle-tr', cursor: 'nesw-resize', dx: 1, dy: -1 },
+                { class: 'resize-handle-tl', cursor: 'nwse-resize', dx: -1, dy: -1 },
+                { class: 'resize-handle-b', cursor: 'ns-resize', dy: 1 },
+                { class: 'resize-handle-l', cursor: 'ew-resize', dx: -1 },
+                { class: 'resize-handle-t', cursor: 'ns-resize', dy: -1 },
+                { class: 'resize-handle-r', cursor: 'ew-resize', dx: 1 },
+            ];
+
+            resizeHandles.forEach(handle => {
+                const h = document.createElement('div');
+                h.className = `absolute ${handle.class} w-3 h-3 border-none`;
+                h.style.cursor = handle.cursor;
+                // Position handles
+                if (handle.class.includes('br')) { h.style.bottom = h.style.right = '0'; }
+                else if (handle.class.includes('bl')) { h.style.bottom = h.style.left = '0'; }
+                else if (handle.class.includes('tr')) { h.style.top = h.style.right = '0'; }
+                else if (handle.class.includes('tl')) { h.style.top = h.style.left = '0'; }
+                else if (handle.class.includes('b')) { h.style.bottom = '0'; h.style.left = '50%'; h.style.transform = 'translateX(-50%)'; h.style.width = '100%'; h.style.height = '6px'; }
+                else if (handle.class.includes('t')) { h.style.top = '0'; h.style.left = '50%'; h.style.transform = 'translateX(-50%)'; h.style.width = '100%'; h.style.height = '6px'; }
+                else if (handle.class.includes('l')) { h.style.left = '0'; h.style.top = '50%'; h.style.transform = 'translateY(-50%)'; h.style.height = '100%'; h.style.width = '6px'; }
+                else if (handle.class.includes('r')) { h.style.right = '0'; h.style.top = '50%'; h.style.transform = 'translateY(-50%)'; h.style.height = '100%'; h.style.width = '6px'; }
+
+                newWindow.appendChild(h);
+
+                h.addEventListener('mousedown', (e) => {
+                    if (newWindow.dataset.maximized === 'true') return;
+                    isResizing = true;
+                    newWindow.style.zIndex = ++highestZIndex; // Bring to front
+                    resizeStartX = e.clientX;
+                    resizeStartY = e.clientY;
+                    resizeStartWidth = newWindow.offsetWidth;
+                    resizeStartHeight = newWindow.offsetHeight;
+                    newWindow.dataset.resizeHandle = handle.class; // Store which handle is active
+                    e.stopPropagation(); // Prevent dragging
+                });
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isResizing || newWindow.dataset.maximized === 'true') return;
+
+                const dx = e.clientX - resizeStartX;
+                const dy = e.clientY - resizeStartY;
+                const handle = newWindow.dataset.resizeHandle;
+
+                let newWidth = newWindow.offsetWidth;
+                let newHeight = newWindow.offsetHeight;
+                let newLeft = newWindow.offsetLeft;
+                let newTop = newWindow.offsetTop;
+
+                const minWidth = 200;
+                const minHeight = 100;
+                const taskbarHeight = document.getElementById('taskbar').offsetHeight;
+
+                if (handle.includes('r')) {
+                    newWidth = Math.max(minWidth, resizeStartWidth + dx);
+                }
+                if (handle.includes('b')) {
+                    newHeight = Math.max(minHeight, resizeStartHeight + dy);
+                }
+                if (handle.includes('l')) {
+                    newWidth = Math.max(minWidth, resizeStartWidth - dx);
+                    if (newWidth > minWidth) {
+                        newLeft = newWindow.offsetLeft + dx;
+                    }
+                }
+                if (handle.includes('t')) {
+                    newHeight = Math.max(minHeight, resizeStartHeight - dy);
+                    if (newHeight > minHeight) {
+                        newTop = newWindow.offsetTop + dy;
+                    }
+                }
+
+                // Apply new dimensions and positions
+                if (newWidth > minWidth) newWindow.style.width = `${newWidth}px`;
+                if (newHeight > minHeight) newWindow.style.height = `${newHeight}px`;
+
+                // Clamp position
+                newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - newWindow.offsetWidth));
+                newTop = Math.max(0, Math.min(newTop, window.innerHeight - taskbarHeight - newWindow.offsetHeight));
+
+                newWindow.style.left = `${newLeft}px`;
+                newWindow.style.top = `${newTop}px`;
+            });
+
+            document.addEventListener('mouseup', () => {
+                isResizing = false;
+                newWindow.dataset.resizeHandle = '';
+            });
+
+
+            // Bring to front on click
+            newWindow.addEventListener('mousedown', () => {
+                if (newWindow.dataset.minimized === 'false') {
+                    newWindow.style.zIndex = ++highestZIndex;
+                }
+            });
+
+            // Control Buttons
+            titleBar.querySelector('[data-action="close"]').addEventListener('click', () => {
+                newWindow.remove();
+                delete openWindows[windowId];
+                updateTaskbar();
+            });
+
+            titleBar.querySelector('[data-action="minimize"]').addEventListener('click', () => {
+                if (newWindow.dataset.minimized === 'false') {
+                    newWindow.classList.add('hidden'); // Hide the window
+                    newWindow.dataset.minimized = 'true';
+                } else {
+                    newWindow.classList.remove('hidden'); // Show the window
+                    newWindow.style.zIndex = ++highestZIndex; // Bring to front
+                    newWindow.dataset.minimized = 'false';
+                }
+                updateTaskbar();
+            });
+
+            let originalX, originalY, originalWidth, originalHeight; // For maximize/restore
+
+            titleBar.querySelector('[data-action="maximize"]').addEventListener('click', () => {
+                if (newWindow.dataset.maximized === 'false') {
+                    // Store original position and size
+                    originalX = newWindow.style.left;
+                    originalY = newWindow.style.top;
+                    originalWidth = newWindow.style.width;
+                    originalHeight = newWindow.style.height;
+
+                    // Maximize
+                    newWindow.style.left = '0px';
+                    newWindow.style.top = '0px';
+                    newWindow.style.width = '100%';
+                    newWindow.style.height = `calc(100% - ${document.getElementById('taskbar').offsetHeight}px)`;
+                    newWindow.dataset.maximized = 'true';
+                    newWindow.style.zIndex = ++highestZIndex; // Bring to front
+                    newWindow.classList.add('maximized'); // Add class for potential future styling
+                } else {
+                    // Restore
+                    newWindow.style.left = originalX;
+                    newWindow.style.top = originalY;
+                    newWindow.style.width = originalWidth;
+                    newWindow.style.height = originalHeight;
+                    newWindow.dataset.maximized = 'false';
+                    newWindow.style.zIndex = ++highestZIndex; // Bring to front
+                    newWindow.classList.remove('maximized');
+                }
+            });
+
+            updateTaskbar(); // Update taskbar after creating window
+        }
+
+        /**
+         * Updates the taskbar with buttons for open windows.
+         */
+        function updateTaskbar() {
+            const taskbarApps = document.getElementById('taskbarApps');
+            taskbarApps.innerHTML = ''; // Clear existing buttons
+
+            for (const id in openWindows) {
+                const win = openWindows[id];
+                const button = document.createElement('button');
+                button.className = 'taskbar-button h-6 px-3 mx-1 bg-gray-300 border-2 border-gray-400 flex items-center cursor-pointer hover:bg-gray-400 active:bg-gray-200 text-black text-xs';
+                button.textContent = win.querySelector('.window-title-bar span:nth-child(1) span').textContent; // Get title text
+                button.dataset.windowId = id;
+
+                // Add active/pressed state if window is focused or not minimized
+                if (win.dataset.minimized === 'false') {
+                     // No need for a specific active state here, clicking will bring to front
+                }
+
+                button.addEventListener('click', () => {
+                    const targetWindow = openWindows[button.dataset.windowId];
+                    if (targetWindow) {
+                        if (targetWindow.dataset.minimized === 'true') {
+                            targetWindow.classList.remove('hidden');
+                            targetWindow.dataset.minimized = 'false';
+                            targetWindow.style.zIndex = ++highestZIndex; // Bring to front
+                        } else {
+                            // If already open, minimize it
+                            targetWindow.classList.add('hidden');
+                            targetWindow.dataset.minimized = 'true';
+                        }
+                        updateTaskbar(); // Re-render taskbar buttons to reflect minimization state
+                    }
+                });
+                taskbarApps.appendChild(button);
+            }
+        }
+
+        /**
+         * Creates a console application within a window.
+         * @param {HTMLElement} container - The div element to put the console into.
+         * @param {string} windowId - The ID of the parent window.
+         */
+        function createConsole(container, windowId) {
+            container.classList.add('flex', 'flex-col', 'h-full');
+            container.style.backgroundColor = 'black'; // Ensure black background for console content
+
+            const output = document.createElement('div');
+            output.className = 'console-output flex-grow overflow-y-auto p-2 text-green-400';
+            output.innerHTML = 'Добро пожаловать в OramicCOS Console 2.0!<br>Введите "help" для списка команд.<br>';
+            container.appendChild(output);
+
+            const inputLine = document.createElement('div');
+            inputLine.className = 'console-input-line flex items-center p-1 bg-gray-800 border-t border-gray-700';
+            inputLine.innerHTML = `
+                <span class="text-green-400 mr-1">${currentUser}@OramicCOS></span>
+                <input type="text" class="console-input flex-grow bg-transparent border-none outline-none text-green-400" autofocus>
+            `;
+            container.appendChild(inputLine);
+
+            const inputField = inputLine.querySelector('.console-input');
+            inputField.focus(); // Focus the input when console opens
+
+            let currentDirectory = '/home/system'; // Default to system's home directory
+            const fileSystem = {
+                '/': { type: 'directory', contents: ['home', 'bin', 'C-', 'System16'] },
+                '/home': { type: 'directory', contents: ['system'] }, // Changed to system
+                '/home/system': { type: 'directory', contents: ['documents', 'desktop', 'notes.txt'] }, // Changed to system
+                '/bin': { type: 'directory', contents: ['help', 'echo', 'clear', 'ls', 'cd', 'cat', 'whoami', 'date', 'sysinfo'] },
+                '/C-': { type: 'directory', contents: ['login.wav'] }, // Placeholder for login sound
+                '/System16': { type: 'directory', contents: ['man.bat', 'calc.bat', 'edit.exe'] },
+                '/home/system/documents': { type: 'directory', contents: [] }, // Changed to system
+                '/home/system/desktop': { type: 'directory', contents: [] }, // Changed to system
+                '/home/system/notes.txt': { type: 'file', content: 'Привет, это OramicCOS!\nЭта ОС находится в разработке.\n\nСтатьи для помощи:\n  - man.txt (фиктивная)\n  - calc.txt (фиктивная)\n  - edit.txt (фиктивная)' },
+                '/System16/man.bat': { type: 'file', content: 'Это man.bat.\nЗдесь должна быть документация.' },
+                '/System16/calc.bat': { type: 'file', content: 'Это calc.bat.\nИмитация калькулятора.' },
+                '/System16/edit.exe': { type: 'file', content: 'Это edit.exe.\nИмитация текстового редактора.' },
+                '/C-/login.wav': { type: 'file', content: 'Бинарные данные звукового файла login.wav' } // Just a placeholder
+            };
+
+            const commandHistory = [];
+            let historyIndex = -1;
+
+            const printOutput = (text, isError = false) => {
+                output.innerHTML += `<span style="color: ${isError ? 'red' : '#00FF00'};">${text}</span><br>`;
+                output.scrollTop = output.scrollHeight; // Scroll to bottom
+            };
+
+            const executeCommand = (command) => {
+                const parts = command.trim().split(/\s+/);
+                const cmd = parts[0];
+                const args = parts.slice(1);
+
+                switch (cmd) {
+                    case 'help':
+                        printOutput('Доступные команды:');
+                        printOutput('  help - Показать этот список.');
+                        printOutput('  man - Открыть руководство (заглушка).');
+                        printOutput('  calc - Открыть калькулятор (заглушка).');
+                        printOutput('  edit - Открыть редактор (заглушка).');
+                        printOutput('  echo [текст] - Вывести текст.');
+                        printOutput('  clear - Очистить консоль.');
+                        printOutput('  ls - Вывести содержимое текущей директории.');
+                        printOutput('  cd [директория] - Изменить текущую директорию.');
+                        printOutput('  cat [файл] - Вывести содержимое файла.');
+                        printOutput('  whoami - Показать текущего пользователя.');
+                        printOutput('  date - Показать текущую дату и время.');
+                        printOutput('  sysinfo - Показать информацию о системе.');
+                        break;
+                    case 'echo':
+                        printOutput(args.join(' '));
+                        break;
+                    case 'clear':
+                        output.innerHTML = '';
+                        break;
+                    case 'ls':
+                        const pathToList = args[0] ? resolvePath(args[0]) : currentDirectory;
+                        const dir = fileSystem[pathToList];
+                        if (dir && dir.type === 'directory') {
+                            if (dir.contents.length > 0) {
+                                printOutput(dir.contents.join(' '));
+                            } else {
+                                printOutput('Директория пуста.');
+                            }
+                        } else {
+                            printOutput(`ls: не удалось получить доступ к '${args[0] || '.'}': Нет такого файла или директории`, true);
+                        }
+                        break;
+                    case 'cd':
+                        const targetPath = args[0];
+                        if (!targetPath) {
+                            currentDirectory = '/home/system'; // Default to system's home
+                            printOutput(`Переход в: ${currentDirectory}`);
+                            return;
+                        }
+                        const resolvedPath = resolvePath(targetPath);
+                        const targetDir = fileSystem[resolvedPath];
+
+                        if (targetDir && targetDir.type === 'directory') {
+                            currentDirectory = resolvedPath;
+                            printOutput(`Переход в: ${currentDirectory}`);
+                        } else {
+                            printOutput(`cd: ${targetPath}: Нет такого файла или директории`, true);
+                        }
+                        break;
+                    case 'cat':
+                        const filePath = args[0];
+                        if (!filePath) {
+                            printOutput('Использование: cat [файл]');
+                            return;
+                        }
+                        const resolvedFilePath = resolvePath(filePath);
+                        const file = fileSystem[resolvedFilePath];
+                        if (file && file.type === 'file') {
+                            printOutput(file.content);
+                        } else {
+                            printOutput(`cat: ${filePath}: Нет такого файла или директории`, true);
+                        }
+                        break;
+                    case 'whoami':
+                        printOutput(currentUser); // Will be 'system'
+                        break;
+                    case 'date':
+                        printOutput(new Date().toLocaleString('ru-RU'));
+                        break;
+                    case 'sysinfo':
+                    case 'pcinfo': // Alias
+                        printOutput('CPU: Generic 32-bit Compatible CPU');
+                        printOutput('RAM: 512 MB');
+                        printOutput('GPU: Default OramiX Driver 16:9');
+                        break;
+                    case 'man':
+                        showMessageBox('Запуск man.bat... (Недоступно в веб-версии, это просто заглушка)');
+                        break;
+                    case 'calc':
+                        showMessageBox('Запуск calc.bat... (Недоступно в веб-версии, это просто заглушка)');
+                        break;
+                    case 'edit':
+                        showMessageBox('Запуск edit.exe... (Недоступно в веб-версии, это просто заглушка)');
+                        break;
+                    default:
+                        printOutput(`Команда не найдена: ${cmd}`, true);
+                        break;
+                }
+            };
+
+            const resolvePath = (path) => {
+                if (path.startsWith('/')) {
+                    return path.replace(/\/+$/, '') || '/'; // Absolute path, remove trailing slash unless root
+                } else if (path === '..') {
+                    const parts = currentDirectory.split('/');
+                    if (parts.length <= 2) return '/'; // Can't go above root
+                    return parts.slice(0, -1).join('/') || '/';
+                } else if (path === '.') {
+                    return currentDirectory;
+                } else {
+                    const newPath = `${currentDirectory === '/' ? '' : currentDirectory}/${path}`;
+                    return newPath.replace(/\/\//g, '/').replace(/\/+$/, '') || '/'; // Remove double slashes and trailing slash
+                }
+            };
+
+            inputField.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    const command = inputField.value;
+                    if (command.trim() === '') {
+                        printOutput(''); // Just a new line for empty command
+                    } else {
+                        commandHistory.push(command);
+                        historyIndex = commandHistory.length;
+                        printOutput(`${currentUser}@OramicCOS> ${command}`);
+                        executeCommand(command);
+                    }
+                    inputField.value = '';
+                } else if (e.key === 'ArrowUp') {
+                    if (historyIndex > 0) {
+                        historyIndex--;
+                        inputField.value = commandHistory[historyIndex];
+                        e.preventDefault(); // Prevent cursor movement
+                    }
+                } else if (e.key === 'ArrowDown') {
+                    if (historyIndex < commandHistory.length - 1) {
+                        historyIndex++;
+                        inputField.value = commandHistory[historyIndex];
+                        e.preventDefault(); // Prevent cursor movement
+                    } else if (historyIndex === commandHistory.length - 1) {
+                        historyIndex = commandHistory.length;
+                        inputField.value = '';
+                        e.preventDefault();
+                    }
+                }
+            });
+        }
+
+        /**
+         * Creates a basic text editor within a window.
+         * @param {HTMLElement} container - The div element to put the editor into.
+         * @param {string} initialContent - The initial text content.
+         */
+        function createTextEditor(container, initialContent) {
+            const textarea = document.createElement('textarea');
+            textarea.className = 'text-editor bg-white text-black p-2 border-none resize-none focus:outline-none';
+            textarea.value = initialContent || '';
+            container.appendChild(textarea);
+            textarea.focus();
+        }
+
+        /**
+         * Creates a file explorer application within a window.
+         * @param {HTMLElement} container - The div element to put the explorer into.
+         * @param {string} windowId - The ID of the parent window.
+         */
+        function createFileExplorer(container, windowId) {
+            container.classList.add('file-explorer');
+
+            let currentExplorerDirectory = '/home/system'; // Default to system's home directory
+            const explorerFileSystem = {
+                '/': { type: 'directory', contents: [{ name: 'home', type: 'folder' }, { name: 'bin', type: 'folder' }, { name: 'C-', type: 'folder' }, { name: 'System16', type: 'folder' }] },
+                '/home': { type: 'directory', contents: [{ name: 'system', type: 'folder' }] }, // Changed to system
+                '/home/system': { type: 'directory', contents: [{ name: 'documents', type: 'folder' }, { name: 'desktop', type: 'folder' }, { name: 'notes.txt', type: 'file' }] }, // Changed to system
+                '/bin': { type: 'directory', contents: [{ name: 'help', type: 'file' }, { name: 'echo', type: 'file' }, { name: 'clear', type: 'file' }, { name: 'ls', type: 'file' }, { name: 'cd', type: 'file' }, { name: 'cat', type: 'file' }, { name: 'whoami', type: 'file' }, { name: 'date', type: 'file' }, { name: 'sysinfo', type: 'file' }] },
+                '/C-': { type: 'directory', contents: [{ name: 'login.wav', type: 'file' }] },
+                '/System16': { type: 'directory', contents: [{ name: 'man.bat', type: 'file' }, { name: 'calc.bat', type: 'file' }, { name: 'edit.exe', type: 'file' }] },
+                '/home/system/documents': { type: 'directory', contents: [] }, // Changed to system
+                '/home/system/desktop': { type: 'directory', contents: [] }, // Changed to system
+                '/home/system/notes.txt': { type: 'file', content: 'Привет, это OramicCOS!\nЭта ОС находится в разработке.' },
+                '/System16/man.bat': { type: 'file', content: 'Это man.bat.\nЗдесь должна быть документация.' },
+                '/System16/calc.bat': { type: 'file', content: 'Это calc.bat.\nИмитация калькулятора.' },
+                '/System16/edit.exe': { type: 'file', content: 'Это edit.exe.\nИмитация текстового редактора.' },
+                '/C-/login.wav': { type: 'file', content: 'Бинарные данные звукового файла login.wav' }
+            };
+
+            // Address Bar
+            const addressBar = document.createElement('div');
+            addressBar.className = 'address-bar';
+            const addressInput = document.createElement('input');
+            addressInput.type = 'text';
+            addressInput.readOnly = true;
+            addressBar.textContent = 'Адрес: ';
+            addressBar.appendChild(addressInput);
+            container.appendChild(addressBar);
+
+            // File List
+            const fileList = document.createElement('div');
+            fileList.className = 'file-list';
+            container.appendChild(fileList);
+
+            function renderFileList() {
+                fileList.innerHTML = '';
+                addressInput.value = currentExplorerDirectory;
+
+                const currentDir = explorerFileSystem[currentExplorerDirectory];
+                if (!currentDir || currentDir.type !== 'directory') {
+                    fileList.innerHTML = '<div style="color: red;">Ошибка: Директория не найдена.</div>';
+                    return;
+                }
+
+                // Add ".." for navigating up
+                if (currentExplorerDirectory !== '/') {
+                    const upItem = document.createElement('div');
+                    upItem.className = 'file-list-item';
+                    upItem.innerHTML = '<span class="icon">⤴️</span><span class="name">..</span>';
+                    upItem.addEventListener('click', () => {
+                        const parts = currentExplorerDirectory.split('/');
+                        if (parts.length <= 2) { // Handles /home/system and /home
+                            currentExplorerDirectory = '/';
+                        } else {
+                            currentExplorerDirectory = parts.slice(0, -1).join('/') || '/';
+                        }
+                        renderFileList();
+                    });
+                    fileList.appendChild(upItem);
+                }
+
+                currentDir.contents.forEach(item => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'file-list-item';
+                    const icon = item.type === 'folder' ? '📁' : '📄';
+                    itemDiv.innerHTML = `<span class="icon">${icon}</span><span class="name">${item.name}</span>`;
+                    itemDiv.addEventListener('click', () => {
+                        const itemPath = resolveExplorerPath(item.name);
+                        const target = explorerFileSystem[itemPath];
+                        if (target) {
+                            if (target.type === 'folder') {
+                                currentExplorerDirectory = itemPath;
+                                renderFileList();
+                            } else if (target.type === 'file') {
+                                showMessageBox(`Содержимое ${item.name}:\n\n${target.content}`);
+                            }
+                        } else {
+                            showMessageBox(`Ошибка: '${item.name}' не найден.`, null, true);
+                        }
+                    });
+                    fileList.appendChild(itemDiv);
+                });
+            }
+
+            function resolveExplorerPath(path) {
+                if (path.startsWith('/')) {
+                    return path.replace(/\/+$/, '') || '/';
+                } else {
+                    const newPath = `${currentExplorerDirectory === '/' ? '' : currentExplorerDirectory}/${path}`;
+                    return newPath.replace(/\/\//g, '/').replace(/\/+$/, '') || '/';
+                }
+            }
+
+            renderFileList();
+        }
+
+        /**
+         * Creates the installer application within a window.
+         * @param {HTMLElement} container - The div element to put the installer into.
+         * @param {string} windowId - The ID of the parent window.
+         */
+        function createInstaller(container, windowId) {
+            container.classList.add('installer-content');
+            container.innerHTML = `
+                <h3 class="text-black text-sm font-bold">Установщик OramicCOS Web Edition</h3>
+                <p class="text-black text-xs">Выберите редакцию системы:</p>
+                <select id="editionSelect" class="w-full max-w-xs">
+                    <option value="Home">Home Edition (SET1.ZIP)</option>
+                    <option value="Server">Server Edition (SET2.ZIP)</option>
+                </select>
+                <button id="downloadInstallerBtn">Скачать установщик</button>
+                <p id="installStatus" class="text-black text-xs mt-2"></p>
+            `;
+
+            const editionSelect = container.querySelector('#editionSelect');
+            const downloadInstallerBtn = container.querySelector('#downloadInstallerBtn');
+            const installStatus = container.querySelector('#installStatus');
+
+            downloadInstallerBtn.addEventListener('click', () => {
+                const selectedEdition = editionSelect.value;
+                let downloadFileName = '';
+                let displayFileName = '';
+
+                if (selectedEdition === 'Home') {
+                    downloadFileName = 'SET1.ZIP';
+                    displayFileName = 'SET1.ZIP (Home Edition)';
+                } else if (selectedEdition === 'Server') {
+                    downloadFileName = 'SET2.ZIP';
+                    displayFileName = 'SET2.ZIP (Server Edition)';
+                } else {
+                    installStatus.textContent = 'Неверный выбор редакции!';
+                    installStatus.style.color = 'red';
+                    return;
+                }
+
+                installStatus.textContent = `Подготовка к загрузке ${displayFileName}...`;
+                installStatus.style.color = 'black';
+
+                // Simulate a small delay before actual download
+                setTimeout(() => {
+                    const link = document.createElement('a');
+                    link.href = downloadFileName; // Path to your ZIP file
+                    link.download = downloadFileName; // Suggests a filename for download
+                    document.body.appendChild(link); // Append to body to make it clickable
+                    link.click(); // Programmatically click the link
+                    document.body.removeChild(link); // Clean up the link element
+
+                    installStatus.textContent = `Загрузка ${displayFileName} начата! Проверьте папку загрузок.`;
+                    installStatus.style.color = 'green';
+                }, 1000); // Simulate network delay
+            });
+        }
+
+
+        // --- Desktop Context Menu Logic ---
+        const desktopContextMenu = document.getElementById('desktopContextMenu');
+
+        document.getElementById('desktop').addEventListener('contextmenu', (e) => {
+            e.preventDefault(); // Prevent default browser context menu
+            // No login check needed here, as it runs as system
+
+            desktopContextMenu.style.left = `${e.clientX}px`;
+            desktopContextMenu.style.top = `${e.clientY}px`;
+            desktopContextMenu.classList.remove('hidden');
+            desktopContextMenu.style.zIndex = ++highestZIndex; // Bring to front
+        });
+
+        // Handle context menu item clicks
+        function handleContextMenuAction(action) {
+            desktopContextMenu.classList.add('hidden'); // Hide menu after click
+
+            switch (action) {
+                case 'properties':
+                    createWindow('text', 'Свойства рабочего стола', 'Здесь будут отображаться свойства рабочего стола и системы. Выберите "Мой ПК" для просмотра характеристик.');
+                    break;
+                case 'change-background':
+                    currentBackgroundIndex = (currentBackgroundIndex + 1) % backgroundColors.length;
+                    document.body.style.backgroundColor = backgroundColors[currentBackgroundIndex];
+                    showMessageBox(`Фон изменен на цвет: ${backgroundColors[currentBackgroundIndex]}`);
+                    break;
+                case 'new-file':
+                    showMessageBox('Функция создания новых файлов пока не реализована.');
+                    break;
+                case 'new-folder':
+                    showMessageBox('Функция создания новых папок пока не реализована.');
+                    break;
+            }
+        }
+
+        // Initial update for taskbar (empty at start)
+        updateTaskbar();
+    </script>
+</body>
+</html>

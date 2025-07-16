@@ -1,5 +1,5 @@
-# COS - ?
-**COS** is Console Operating System... This is OS working in console mode like Linux. 
+# X - ?
+**X** is XSystem... This is kernel working in console mode like Linux. 
 
 ## OramiX System
 **OramiX System** is an operating system on bat, and VBS + Python. This can work as server OS, or just for home.  

@@ -4,9 +4,5 @@
 ## OramiX System
 **OramiX System** is an operating system on batch. This can work as server OS, or just for home.  
 
-### How to share?
-Just zip all OS files and send it to friends.
+Note: Now OramiX System is a Linux distribution. But BAT edition still exists, and support is ended. 
 
-### ORAMIX
-
-Have fun! 
